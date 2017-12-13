@@ -2,21 +2,27 @@
 
 ## NAME
 
-interrupt_signal - unblocks the interupt_wait syscall
+interrupt_signal - signals a virtual interrupt on an interrupt handle
 
 ## SYNOPSIS
 
 ```
 #include <zircon/syscalls.h>
 
-zx_status_t zx_interrupt_signal(zx_handle_t handle);
+zx_status_t zx_interrupt_signal(zx_handle_t handle, uint32_t slot, zx_time_t timestamp);
 ```
 
 ## DESCRIPTION
 
-**interrupt_signal**() causes any thread blocked in **zx_interrupt_wait**
-for the same interrupt handle as *handle* to to unblock and return **ZX_ERR_CANCELED**.
-This can be used to unblock an interrupt thread so it can exit, when shutting down a driver.
+**interrupt_signal**() is used to signal a virtual interruptson the interrupt handle *handle*.
+The *slot* parameter must have been bound to the interrupt handle using **interrupt_bind**()
+with the **ZX_INTERRUPT_VIRTUAL** flag set. This will unblock a call to **interrupt_wait**()
+on the handle with the *slot* bit set in the **interrupt_wait**() *out_slots* parameter.
+After interrupt_wait**() returns, the **timestamp** can retrieved by the interrupt handler thread
+with **interrupt_get_timestamp**().
+
+This syscall is only supported for interrupt handles created with **interrupt_create**().
+In particular, **interrupt_signal**() is not supported for PCI interrupt handles.
 
 ## RETURN VALUE
 
@@ -26,10 +32,16 @@ of failure, a negative error value is returned.
 ## ERRORS
 
 **ZX_ERR_BAD_HANDLE**  *handle* is not a valid handle.
+**ZX_ERR_NOT_SUPPORTED** if *handle* is a PCI interrupt handle
+**ZX_ERR_BAD_STATE**  *slot* was not bound with the **ZX_INTERRUPT_VIRTUAL** flag set
+**ZX_ERR_INVALID_ARGS** if *slot* was not bound with **interrupt_bind**()
 
 ## SEE ALSO
 
 [interrupt_create](interrupt_create.md),
+[interrupt_bind](interrupt_bind.md),
+[interrupt_unbind](interrupt_unbind.md),
 [interrupt_wait](interrupt_wait.md),
-[interrupt_complete](interrupt_complete.md),
+[interrupt_get_timestamp](interrupt_get_timestamp.md),
+[interrupt_cancel](interrupt_cancel.md).
 [handle_close](handle_close.md).
