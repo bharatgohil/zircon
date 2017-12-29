@@ -1,0 +1,65 @@
+include "system/public/zircon/mdi/zircon.mdi"
+
+cpu-map = {
+    clusters = {
+        {
+            name = "a35"
+            cpu-count = 2
+        }
+        {
+            name = "a72"
+            cpu-count = 1
+        }
+    }
+}
+
+mem-map = {
+    bank = {
+        base-phys = 0x40000000
+        length = 0x80000000 // 1GB
+    }
+}
+
+periph-mem-map = {
+    bank = {
+        base-virt = 0xffffffff10000000
+        base-phys = 0x10000000
+        length = 0x06800000
+    }
+}
+
+boot-reserve-mem-map = {
+    bank = {
+        // reserve memory range used by the secure monitor
+        base-phys = 0x43000000
+        length = 0x00030000
+    }
+}
+
+kernel = {
+    // Keep pll011 uart at top so it is initialized first
+    //  (uart6)
+    s905-uart = {
+        base-virt = 0xffffffff11002000
+        base-phys = 0x11002000
+        irq = 91
+    }
+
+    arm-gic-v2 = {
+        base-virt = 0xffffffff10510000
+        base-phys = 0x10510000
+        gicd-offset = 0x1000
+        gicc-offset = 0x2000
+        gich-offset = 0x4000
+        gicv-offset = 0x6000
+        ipi-base = 9
+    }
+
+    arm-psci = {
+        use-smc = true
+    }
+    arm-timer = {
+        irq-phys = 30
+    }
+}
+

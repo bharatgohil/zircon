@@ -1,0 +1,12 @@
+/dts-v1/;
+
+/ {
+    model = "Auto-MT2712";
+
+    chosen {
+        bootargs = "TERM=uart";
+    };
+
+    // empty node needed to make fastboot happy
+    memory {};
+};
